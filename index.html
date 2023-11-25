@@ -5,39 +5,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kick Channel Tracker</title>
-     <link rel="stylesheet" href="main.css" type="text/css" />
-
-
+    <link rel="stylesheet" href="https://streamstats.github.io/KickStats/main.css" type="text/css" />
+    <!-- Add your custom Bootstrap CSS link here -->
 </head>
 
 <body>
 
-    <header class="z-depth-1">
-        <nav class="z-depth-0 backer-dark">
-            <div class="nav-wrapper container">
-                <ul class="left">
-                    <li><a href="https://polyextended.github.io/">Home</a></li>
-                    <li><a href="https://polyextended.github.io/live/">PolyLive</a></li>
-                    <li><a href="https://polyextended.github.io/streamlookup/">PolyLookup</a></li>
-                </ul>
-            </div>
-        </nav>
-    </header>
-
-    <div class="container">
-        <h1 class="center-align">Kick Channel Information</h1>
-
-        <div class="row">
-            <div class="input-field col s12">
-                <input type="text" id="channelInput" class="validate">
-                <label for="channelInput">Enter Kick Channel Name</label>
-            </div>
+    <div class="container text-center">
+        <h2 class="label label-success display-5" style="width: 200px;">KickStats Viewer</h2>
+        <hr class="my-2">
+        <div>
+            <input type="text" id="channelInput" placeholder="Kick Username" class="form-control" style="width: 200px; display: inline-block;">
+            <input type="button" id="getProfileBtn" class="btn btn-primary" value="Get Profile">
         </div>
+        <div class="profile">
+            <!-- The fetched channel information will be displayed here -->
+        </div>
+        <hr class="my-2">
+        <footer>&copy; StreamStats 2017 </footer>
+    </div>
 
-        <div class="row">
-            <div class="col s12" id="channelInfo">
-                <p>Loading...</p>
-            </div>
+    <div class="row">
+        <div class="col-md-12" id="channelInfo">
+            <!-- Loading or error message will be displayed here -->
         </div>
     </div>
 
@@ -60,8 +50,8 @@
             }
         }
 
-        document.getElementById('channelInput').addEventListener('change', function () {
-            const channelName = this.value;
+        document.getElementById('getProfileBtn').addEventListener('click', async function () {
+            const channelName = document.getElementById('channelInput').value;
             getChannelInfo(channelName);
         });
 
@@ -72,9 +62,6 @@
 
         async function getChannelInfo(channelName) {
             try {
-                const response = await fetch(`https://kick.com/api/v1/channels/${channelName}`);
-                const data = await response.json();
-
                 // Check if the user is banned
                 const isBanned = bannedUsers.includes(channelName.toLowerCase());
 
@@ -84,19 +71,28 @@
                     return;
                 }
 
-                // Check if the user has sub badges
-                const hasSubBadges = data.subscriber_badges && data.subscriber_badges.length > 0;
+                // Add logic here to fetch channel information and update the display
+                const response = await fetch(`https://kick.com/api/v1/channels/${channelName}`);
+                const data = await response.json();
 
                 // Display channel information
                 const channelInfoHTML = `
-                    <p>ID: ${data.id}</p>
-                    <p>User ID: ${data.user_id}</p>
-                    <p>Channel Name: ${data.slug}</p>
-                    <p>Is Banned: ${data.is_banned}</p>
-                    <p>Playback URL: ${data.playback_url}</p>
-                    ${hasSubBadges ? '<p>Has Sub Badges</p>' : ''}
-                    <!-- Add more channel information as needed -->
+                    <center>
+                    <img src="${data.avatar}" width="100px" height="100px" style="border:3px solid red">
+                    <h1><span class="label label-success">${data.channelName}</h1>
+                    <br /><b><span class="label label-success">Followers: ${data.followers}</b>
+                    <br /><b><span class="label label-success">Total Views: ${data.totalViews}</b>
+                    <br />
+                    <br /><b><span class="label label-success">Current Status: ${data.online}</b>
+                    <br />
+                    <br /><b><span class="label label-info"><font color="White"><a href="https://twitch.tv/${data.Username}">Twitch.tv/${data.Username}</a></font></b>
+                    <br /><b><span class="label label-danger">Partnered: ${data.sub}</b>
+                    <br /><b><span class="label label-danger">ID: ${data.ID}</b>
+                    <br /><b><span class="label label-primary">Has mature content: ${data.mature}</b>
+                    <br /><b><span class="label label-primary">Last Played: ${data.lastPlayed}</b>
+                    <br /><b><span class="label label-success">Joined on: ${data.join} </b>
                 `;
+
                 document.getElementById('channelInfo').innerHTML = channelInfoHTML;
 
             } catch (error) {
@@ -106,8 +102,10 @@
         }
     </script>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <!-- Remove Materialize JS scripts and add your custom Bootstrap JS scripts here -->
+    <!-- Example: -->
+    <!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> -->
+    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script> -->
 
 </body>
 
