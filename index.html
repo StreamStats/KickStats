@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kick Channel Tracker</title>
+     <link rel="stylesheet" href="main.css" type="text/css" />
+
+
+</head>
+
+<body>
+
+    <header class="z-depth-1">
+        <nav class="z-depth-0 backer-dark">
+            <div class="nav-wrapper container">
+                <ul class="left">
+                    <li><a href="https://polyextended.github.io/">Home</a></li>
+                    <li><a href="https://polyextended.github.io/live/">PolyLive</a></li>
+                    <li><a href="https://polyextended.github.io/streamlookup/">PolyLookup</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1 class="center-align">Kick Channel Information</h1>
+
+        <div class="row">
+            <div class="input-field col s12">
+                <input type="text" id="channelInput" class="validate">
+                <label for="channelInput">Enter Kick Channel Name</label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col s12" id="channelInfo">
+                <p>Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let bannedUsers = [];
+
+        // Fetch banned users when the script starts
+        (async function fetchBannedUsers() {
+            bannedUsers = await getBannedUsers();
+        })();
+
+        async function getBannedUsers() {
+            try {
+                const response = await fetch('https://polyextended.github.io/banned.json');
+                const data = await response.json();
+                return data.BannedUsers.map(user => user.toLowerCase()) || [];
+            } catch (error) {
+                console.error('Error fetching banned users:', error);
+                return [];
+            }
+        }
+
+        document.getElementById('channelInput').addEventListener('change', function () {
+            const channelName = this.value;
+            getChannelInfo(channelName);
+        });
+
+        // Call getBannedUsers every 3 minutes
+        setInterval(async () => {
+            bannedUsers = await getBannedUsers();
+        }, 3 * 60 * 1000);
+
+        async function getChannelInfo(channelName) {
+            try {
+                const response = await fetch(`https://kick.com/api/v1/channels/${channelName}`);
+                const data = await response.json();
+
+                // Check if the user is banned
+                const isBanned = bannedUsers.includes(channelName.toLowerCase());
+
+                // Display banned message if the user is banned
+                if (isBanned) {
+                    document.getElementById('channelInfo').innerHTML = '<p>User is banned</p>';
+                    return;
+                }
+
+                // Check if the user has sub badges
+                const hasSubBadges = data.subscriber_badges && data.subscriber_badges.length > 0;
+
+                // Display channel information
+                const channelInfoHTML = `
+                    <p>ID: ${data.id}</p>
+                    <p>User ID: ${data.user_id}</p>
+                    <p>Channel Name: ${data.slug}</p>
+                    <p>Is Banned: ${data.is_banned}</p>
+                    <p>Playback URL: ${data.playback_url}</p>
+                    ${hasSubBadges ? '<p>Has Sub Badges</p>' : ''}
+                    <!-- Add more channel information as needed -->
+                `;
+                document.getElementById('channelInfo').innerHTML = channelInfoHTML;
+
+            } catch (error) {
+                console.error('Error fetching channel info:', error);
+                document.getElementById('channelInfo').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+</body>
+
+</html>
