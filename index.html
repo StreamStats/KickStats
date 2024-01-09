@@ -20,16 +20,16 @@
         </div>
         <div class="profile">
             <!-- The fetched channel information will be displayed here -->
+            <div class="channelInfo" id="channelInfo">
+                <!-- Loading or error message will be displayed here -->
+            </div>
         </div>
         <hr class="my-2">
         <footer>&copy; StreamStats 2017 </footer>
     </div>
 
-    <div class="row">
-        <div class="col-md-12" id="channelInfo">
-            <!-- Loading or error message will be displayed here -->
-        </div>
-    </div>
+    <!-- Include Moment.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
     <script>
         let bannedUsers = [];
@@ -75,22 +75,26 @@
                 const response = await fetch(`https://kick.com/api/v1/channels/${channelName}`);
                 const data = await response.json();
 
+                // Format the "Joined on" date using Moment.js
+                const joinedDate = moment(data.user.email_verified_at).format('MMMM DD, YYYY');
+
                 // Display channel information
                 const channelInfoHTML = `
                     <center>
-                    <img src="${data.avatar}" width="100px" height="100px" style="border:3px solid red">
-                    <h1><span class="label label-success">${data.channelName}</h1>
-                    <br /><b><span class="label label-success">Followers: ${data.followers}</b>
-                    <br /><b><span class="label label-success">Total Views: ${data.totalViews}</b>
+                    <img src="${data.user.profile_pic}" width="50%" style="border:3px solid red">
+                    <h1><span class="label label-success">${data.user.username}</span></h1>
+                    <br /><b><span class="label label-success">Followers: ${data.followersCount}</span></b>
+                    <br /><b><span class="label label-success">Can Host: ${data.can_host}</span></b>
                     <br />
-                    <br /><b><span class="label label-success">Current Status: ${data.online}</b>
+                    <br /><b><span class="label label-success">Current Status: ${data.livestream ? 'Online' : 'Offline'}</span></b>
                     <br />
-                    <br /><b><span class="label label-info"><font color="White"><a href="https://twitch.tv/${data.Username}">Twitch.tv/${data.Username}</a></font></b>
-                    <br /><b><span class="label label-danger">Partnered: ${data.sub}</b>
-                    <br /><b><span class="label label-danger">ID: ${data.ID}</b>
-                    <br /><b><span class="label label-primary">Has mature content: ${data.mature}</b>
-                    <br /><b><span class="label label-primary">Last Played: ${data.lastPlayed}</b>
-                    <br /><b><span class="label label-success">Joined on: ${data.join} </b>
+                    <br /><b><span class="label label-info"><font color="White"><a href="https://kick.com/${data.user.username}">Kick.com/${data.user.username}</a></font></span></b>
+                    <br /><b><span class="label label-danger">Partnered: ${getPartnerStatus(data.subscription_enabled)}</span></b>
+                    <br /><b><span class="label label-danger">ID: ${data.user.id}</span></b>
+                    <br /><b><span class="label label-primary">Has mature content: ${data.mature}</span></b>
+                    <br /><b><span class="label label-primary">Last Played: ${data.lastPlayed}</span></b>
+                    <br /><b><span class="label label-success">Vods on: ${data.vod_enabled}</span></b>
+                    <br /><b><span class="label label-success">Joined on: ${joinedDate}</span></b>
                 `;
 
                 document.getElementById('channelInfo').innerHTML = channelInfoHTML;
@@ -99,6 +103,11 @@
                 console.error('Error fetching channel info:', error);
                 document.getElementById('channelInfo').innerHTML = `<p>Error: ${error.message}</p>`;
             }
+        }
+
+        // Function to get partner status
+        function getPartnerStatus(subscriptionEnabled) {
+            return subscriptionEnabled ? 'Yes' : 'No';
         }
     </script>
 
